@@ -13,32 +13,30 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <memory>
 
 namespace NLXALE001 {
 
-using namespace std;
 
 class Image
 {
 private:
 	int width, height;
-	unique_ptr<unsigned char[]> data;
+	std::unique_ptr<unsigned char[]> data;
 public:
 
-    Image();	// default constructor - define in .cpp
+    Image(std::string im);	// default constructor - define in .cpp
+    Image(const Image & copy);
 	~Image();	// destructor - define in .cpp file
 
-	std::unique_ptr<unsigned char[]> readFile(string im);
-	void add(string im1, string im2, std::string outName);
-	void sub(string im1, string im2, std::string outName);
-	void invert(string im1, std::string outName);
-	void mask(string im1, string im2, std::string outName);
-	void threshold(string im1, string im2, std::string outName);
-	void Image::copy(const Image & rhs);
-
-	// define begin()/end() to get iterator to start and    
-    // "one-past" end. 
-	iterator begin(void); 
+	Image readFile(std::string im);
+	// void add(std::string im1, std::string im2, std::string outName);
+	// void sub(std::string im1, std::string im2, std::string outName);
+	// void invert(std::string im1, std::string outName);
+	// void mask(std::string im1, std::string im2, std::string outName);
+	// void threshold(std::string im1, int f, std::string outName);
+	void copy(const Image & rhs);
+	void saveFile(std::string outName);
 
 	class iterator
 	{
@@ -47,39 +45,151 @@ public:
 		// construct only via Image class (begin/end)
 		iterator(u_char *p) : ptr(p) {}
 	public:
+		iterator(iterator&& comp)
+		{
+			ptr = comp.ptr;
+			comp = nullptr;
+		}
+		~iterator(){	ptr = nullptr;	}
 	    //copy construct is public
-	    iterator( const iterator & rhs) : ptr(rhs.ptr);        
+	    iterator( const iterator & rhs) : ptr(rhs.ptr){};        
 	    // define overloaded ops: *, ++, --, =       
 	    iterator & operator=(const iterator & rhs);       
    		// other methods for iterator   
+
+
+	    bool operator!=(const iterator& comp) 
+		{
+			return(ptr != comp.ptr);
+		}
+		const iterator& operator++()
+		{
+			++ptr;
+			return *this;
+		}
+		unsigned char& operator*()
+			{
+			return *ptr;
+		}	
+
+
     };    
        
-   unique_ptr<unsigned char[]> & operator+(unique_ptr<unsigned char[]> & lhs, const unique_ptr<unsigned char[]> & rhs)
+    Image operator+(const Image & comp)
 	{
+		Image curr(*this);
 
-		return result; 
+		Image::iterator curr_beg = curr.begin();
+		Image::iterator curr_end = curr.end();
+		Image::iterator comp_beg = comp.begin();
+		Image::iterator comp_end = comp.end();
+
+		while ( curr_beg != curr_end) {
+			int sum = (*curr_beg + *comp_beg);
+			if(sum > 255)
+			{
+				*curr_beg = 255;
+			}
+			else
+			{
+				*curr_beg =  sum;
+			}
+			++curr_beg;
+			++comp_beg;
+		}
+
+		return curr; 
 	}
 
-	unique_ptr<unsigned char[]> & operator-(unique_ptr<unsigned char[]> & lhs, const unique_ptr<unsigned char[]> & rhs)
+	Image operator-(const Image & comp)
 	{
+		Image curr(*this);
 
-		return result; 
+		Image::iterator curr_beg = curr.begin();
+		Image::iterator curr_end = curr.end();
+		Image::iterator comp_beg = comp.begin();
+		Image::iterator comp_end = comp.end();
+
+		while ( curr_beg != curr_end) {
+			int sum = (*curr_beg - *comp_beg);
+			if(sum <0)
+			{
+				*curr_beg = 0;
+			}
+			else
+			{
+				*curr_beg =  sum;
+			}
+			++curr_beg;
+			++comp_beg;
+		}
+
+		return curr; 
+		
 	}
-	unique_ptr<unsigned char[]> & operator!(unique_ptr<unsigned char[]> & lhs)
+	Image operator!()
 	{
+		Image curr(*this);
 
-		return result; 
+		Image::iterator curr_beg = curr.begin();
+		Image::iterator curr_end = curr.end();
+
+		while ( curr_beg != curr_end) 
+		{
+			*curr_beg =  255 - *curr_beg;
+			
+			++curr_beg;
+		}
+
+		return curr;  
 	}
-	unique_ptr<unsigned char[]> & operator/(unique_ptr<unsigned char[]> & lhs, const unique_ptr<unsigned char[]> & rhs)
+	Image operator/(const Image & comp)
 	{
+		Image curr(*this);
 
-		return result; 
+		Image::iterator curr_beg = curr.begin();
+		Image::iterator curr_end = curr.end();
+		Image::iterator comp_beg = comp.begin();
+		Image::iterator comp_end = comp.end();
+
+		while ( curr_beg != curr_end) {
+			if(*comp_beg!=255)
+			{
+				*curr_beg = 0;
+			}
+			++curr_beg;
+			++comp_beg;
+		}
+
+		return curr; 
 	}
-	unique_ptr<unsigned char[]> & operator*(unique_ptr<unsigned char[]> & lhs, const int f)
+	Image operator*(const int f)
 	{
+		Image curr(*this);
 
-		return result; 
+		Image::iterator curr_beg = curr.begin();
+		Image::iterator curr_end = curr.end();
+
+		while ( curr_beg != curr_end) {
+			if(*curr_beg>f)
+			{
+				*curr_beg = 255;
+			}
+			else
+			{
+				*curr_beg =  0;
+			}
+			++curr_beg;
+		}
+
+		return curr; 
 	} 
+
+	
+	// define begin()/end() to get iterator to start and    
+   	// "one-past" end. 
+	iterator begin(void)const;
+	iterator end(void)const; 
 
 };
 
