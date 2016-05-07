@@ -27,6 +27,7 @@ public:
 
     Image(std::string im);	// default constructor - define in .cpp
     Image(const Image & copy);
+    Image(int w, int h, unsigned char*buffer);
     Image(Image&& move);
 	~Image();	// destructor - define in .cpp file
 
@@ -62,11 +63,6 @@ public:
 		return *this;
 	}
 	bool readImage(std::string im);
-	// void add(std::string im1, std::string im2, std::string outName);
-	// void sub(std::string im1, std::string im2, std::string outName);
-	// void invert(std::string im1, std::string outName);
-	// void mask(std::string im1, std::string im2, std::string outName);
-	// void threshold(std::string im1, int f, std::string outName);
 	void saveFile(std::string outName);
 
 	class iterator
@@ -121,8 +117,31 @@ public:
 		}
 
 
-    };    
-       
+    };  
+
+    bool operator==(const Image& comp) 
+		{
+			Image curr(*this);
+
+			Image::iterator curr_beg = curr.begin();
+			Image::iterator curr_end = curr.end();
+			Image::iterator comp_beg = comp.begin();
+			Image::iterator comp_end = comp.end();
+
+			while ( curr_beg != curr_end) {
+				if(*curr_beg==*comp_beg)
+				{
+					++curr_beg;
+					++comp_beg;
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+			return true; 
+		}
     Image operator+(const Image & comp)
 	{
 		Image curr(*this);

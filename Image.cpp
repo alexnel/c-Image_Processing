@@ -35,6 +35,8 @@ namespace NLXALE001 {
 		move.data=nullptr;
 	}
 
+	Image::Image(int w, int h, unsigned char*buffer):width(w), height(h)
+	{	data.reset(buffer);	}
 	Image::~Image()	{	// destructor - define in .cpp file
 		}//end for i
 	
