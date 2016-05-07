@@ -27,15 +27,46 @@ public:
 
     Image(std::string im);	// default constructor - define in .cpp
     Image(const Image & copy);
+    Image(Image&& move);
 	~Image();	// destructor - define in .cpp file
 
-	Image readFile(std::string im);
+	Image& operator=(const Image& rhs)
+	{
+		if (this == &rhs)
+			{	return *this;	}
+		if (data!=nullptr)
+			{	data = nullptr;	}
+		int l = rhs.width*rhs.height;
+		unsigned char* buffer = new unsigned char[l];
+
+		for (int i=0; i<l; i++)
+			{	buffer[i] = rhs.data[i];	}
+		data.reset(buffer);
+		return *this;
+	}
+	Image& operator=(Image&& rhs)
+	{
+		if (this == &rhs)
+			{	return *this;	}
+		if (data!=nullptr)
+			{	data = nullptr;	}
+		int l = rhs.width*rhs.height;
+		unsigned char* buffer = new unsigned char[l];
+
+		for (int i=0; i<l; i++)
+			{	buffer[i] = rhs.data[i];	}
+		data.reset(buffer);
+		rhs.height=0;
+		rhs.width=0;
+		rhs.data=nullptr;
+		return *this;
+	}
+	bool readImage(std::string im);
 	// void add(std::string im1, std::string im2, std::string outName);
 	// void sub(std::string im1, std::string im2, std::string outName);
 	// void invert(std::string im1, std::string outName);
 	// void mask(std::string im1, std::string im2, std::string outName);
 	// void threshold(std::string im1, int f, std::string outName);
-	void copy(const Image & rhs);
 	void saveFile(std::string outName);
 
 	class iterator
@@ -43,7 +74,9 @@ public:
 	private:
 		unsigned char *ptr;
 		// construct only via Image class (begin/end)
-		iterator(u_char *p) : ptr(p) {}
+		friend class Image;
+
+		iterator(unsigned char *p);
 	public:
 		iterator(iterator&& comp)
 		{
@@ -54,9 +87,7 @@ public:
 	    //copy construct is public
 	    iterator( const iterator & rhs) : ptr(rhs.ptr){};        
 	    // define overloaded ops: *, ++, --, =       
-	    iterator & operator=(const iterator & rhs);       
    		// other methods for iterator   
-
 
 	    bool operator!=(const iterator& comp) 
 		{
@@ -68,9 +99,26 @@ public:
 			return *this;
 		}
 		unsigned char& operator*()
-			{
+		{
 			return *ptr;
 		}	
+		iterator & operator=(const iterator & rhs)
+		{
+			if(this!=&rhs)
+			{
+				ptr = rhs.ptr;
+			}
+			return *this;
+		} 
+		iterator & operator=(iterator && rhs)//move
+		{
+			if (this!=&rhs)
+			{
+				ptr = rhs.ptr;
+			}
+			rhs = nullptr;
+			return *this;
+		}
 
 
     };    
@@ -185,7 +233,7 @@ public:
 		return curr; 
 	} 
 
-	
+
 	// define begin()/end() to get iterator to start and    
    	// "one-past" end. 
 	iterator begin(void)const;

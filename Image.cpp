@@ -4,9 +4,10 @@
 #include "Image.h"
 #include <math.h>
 
+using namespace std;
+
 namespace NLXALE001 {
 
-using namespace std;
 
 	Image::Image(string im)	{	// default constructor - define in .cpp
 		readImage(im);
@@ -21,22 +22,34 @@ using namespace std;
 		data.reset(buffer);
 	}
 
-	Image::~Image()	{	// destructor - define in .cpp file
-		}//end for i
+	Image::Image(Image&& move): width(move.width), height(move.height){
+		unsigned char* buffer = new unsigned char[width*height];
+		for (int i=0; i<width*height; i++)
+		{
+			buffer[i]=move.data[i];
+		}
+		data.reset(buffer);
+
+		move.width=0;
+		move.height=0;
+		move.data=nullptr;
 	}
 
-	Image Image::readImage(string im)
+	Image::~Image()	{	// destructor - define in .cpp file
+		}//end for i
+	
+
+	bool Image::readImage(string im)
 		{
 				//open heqader and extract data
 		string headerfile = im + ".pgm";
 		ifstream infile (headerfile.c_str());
-		string line;
 		if(!infile.is_open()){		//error handling
 			cout << "Error, file not found" << endl;
-			return 0;
+			return false;
 		}
 	
-		int numlines=1;////////////////////////////////check this cause not sure if account for the 255 not being counted in the for loop
+		int numlines=1;//////////////////////////////check this cause not sure if account for the 255 not being counted in the for loop
 		int rows;
 		int width;
 		string line;
@@ -45,7 +58,7 @@ using namespace std;
 		while(line!="255")
 		{
 			numlines++;
-			if (line[0]!="#")
+			if (line.at(0)!='#')/////////////////////////doesn't like this
 			{
 				istringstream iss(line);
 	        	iss >> rows;
@@ -66,33 +79,13 @@ using namespace std;
 
 		data.reset(new unsigned char[width*height]);
 
-		binfile.read((char)&data[0], width*height);
+		binfile.read((char*)&data[0], width*height);
 
 		binfile.close();
+		return true;
 
 	}
-	// void Image::add(string im1, string im2, std::string outName)
-	// {
-	// 	data.reset(im1+im2);
-	// }
-	// void Image::sub(string im1, string im2, std::string outName)
-	// {
-	// 	data.reset(im1-im2);
-	// }
-	// void Image::invert(string im1, std::string outName)
-	// {
-	// 	data.reset(!im1);
-	// }
-	// void Image::mask(string im1, string im2, std::string outName)
-	// {
-	// 	data.reset(im1/im2);
-	// }
-	// void Image::threshold(string im1, int f, std::string outName)
-	// {
-	// 	data.reset(*im1);
-	// }
-	void Image::copy(const Image & rhs)
-	{}
+	
 	void Image::saveFile(string outName)
 	{
 		string headerfile = outName + ".pgm";
@@ -107,16 +100,14 @@ using namespace std;
 		binfile.close();
 	}
 
+	Image::iterator::iterator(unsigned char *p):ptr(p){}
+
     // define begin()/end() to get iterator to start and    
     // "one-past" end.    
     Image::iterator Image::begin(void)const { return iterator(&(data.get()[0]));}
 	Image::iterator Image::end(void)const { return iterator(&(data.get()[width*height]));}
-
-	Image::iterator::iterator(unsigned char *p):ptr(p){};
     //copy construct is public
-    iterator::iterator( const iterator & rhs) : ptr(rhs.ptr){}       
-    // define overloaded ops: *, ++, --, =       
-    iterator::iterator & operator=(const iterator & rhs){}      
+    //iterator::iterator( const iterator & rhs) : ptr(rhs.ptr){}     
 	// other methods for iterator       
 
 
