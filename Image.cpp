@@ -50,38 +50,43 @@ namespace NLXALE001 {
 		}
 	
 		int numlines=1;//////////////////////////////check this cause not sure if account for the 255 not being counted in the for loop
-		int rows;
-		int width;
 		string line;
 		getline(infile, line);
-
 		while(line!="255")
 		{
 			numlines++;
-			if (line.at(0)!='#')/////////////////////////doesn't like this
+			if (line.at(0)!='#' && line!="P5")/////////////////////////doesn't like this
 			{
 				istringstream iss(line);
-	        	iss >> rows;
+	        	iss >> height;
 	        	iss >> width;
+	        	cout << height << endl;
+	        	cout << width << endl;
 			}
 			getline(infile, line);
 		}
 		infile.close();
 
-		ifstream binfile (headerfile.c_str(), ios::in|ios::binary|ios::ate);	
+		ifstream binfile (headerfile.c_str(), ios::in|ios::binary);	
 
+		//ostringstream oss;
 		for (int i=0; i<numlines; i++)
 		{
 			getline(binfile, line);
+			cout << line << endl;
 		}
 		//next thing should be first line of binary
 
+		//oss << binfile.rdbuf();
 
 		data.reset(new unsigned char[width*height]);
+		skipws(binfile);
 
 		binfile.read((char*)&data[0], width*height);
 
 		binfile.close();
+
+
 		return true;
 
 	}
@@ -89,14 +94,19 @@ namespace NLXALE001 {
 	void Image::saveFile(string outName)
 	{
 		string headerfile = outName + ".pgm";
-		ofstream binfile (headerfile.c_str(), ios::in|ios::binary);
+		ofstream binfile (headerfile.c_str(), ios::out|ios::binary);
 
 		binfile<<"P5"<<endl;
 		binfile<<"# Image Processing Output File"<<endl;
 		binfile<< height<< " "<< width<< endl;
 		binfile<<"255"<<endl;
-		int size = width*height;
-		//binfile.write(*data, size);		///////////////////////////////////////////////////////////////////////////use iterator here
+		
+		unsigned char byte;
+		for (auto i=this->begin(); i!=end(); ++i)
+		{
+			byte = *i;
+			binfile.write((char*)&byte, 1);
+		}
 		binfile.close();
 	}
 

@@ -178,14 +178,14 @@ public:
 	Image operator!()
 	{
 		Image curr(*this);
-
 		Image::iterator curr_beg = curr.begin();
 		Image::iterator curr_end = curr.end();
 
 		while ( curr_beg != curr_end) 
 		{
-			*curr_beg =  255 - *curr_beg;
-			
+			int j =  255 - *curr_beg;
+			*curr_beg = j;
+
 			++curr_beg;
 		}
 
