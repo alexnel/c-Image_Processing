@@ -9,7 +9,7 @@ using namespace std;
 namespace NLXALE001 {
 
 
-	Image::Image(string im)	{	// default constructor - define in .cpp
+	Image::Image(string im)	{	// default constructor
 		readImage(im);
 	}
 
@@ -22,6 +22,7 @@ namespace NLXALE001 {
 		data.reset(buffer);
 	}
 
+	//move constructor
 	Image::Image(Image&& move): width(move.width), height(move.height){
 		unsigned char* buffer = new unsigned char[width*height];
 		for (int i=0; i<width*height; i++)
@@ -35,15 +36,16 @@ namespace NLXALE001 {
 		move.data=nullptr;
 	}
 
-	Image::Image(int w, int h, unsigned char*buffer):width(w), height(h)
+	Image::Image(int w, int h, unsigned char*buffer):width(w), height(h) //used for unit testing
 	{	data.reset(buffer);	}
-	Image::~Image()	{	// destructor - define in .cpp file
-		}//end for i
+	Image::~Image()	{	// destructor
+		}
 	
 
+	//method for reading image and storing it in data
 	bool Image::readImage(string im)
 		{
-				//open heqader and extract data
+				//open header and extract data
 		string headerfile = im + ".pgm";
 		ifstream infile (headerfile.c_str());
 		if(!infile.is_open()){		//error handling
@@ -51,13 +53,13 @@ namespace NLXALE001 {
 			return false;
 		}
 	
-		int numlines=1;//////////////////////////////check this cause not sure if account for the 255 not being counted in the for loop
+		int numlines=1;//start at 1 to account for the 255 line
 		string line;
 		getline(infile, line);
 		while(line!="255")
 		{
 			numlines++;
-			if (line.at(0)!='#' && line!="P5")/////////////////////////doesn't like this
+			if (line.at(0)!='#' && line!="P5")
 			{
 				istringstream iss(line);
 	        	iss >> height;
@@ -93,6 +95,7 @@ namespace NLXALE001 {
 
 	}
 	
+	//writing manipulated file to .pgm image with header lines
 	void Image::saveFile(string outName)
 	{
 		string headerfile = outName + ".pgm";

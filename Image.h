@@ -25,12 +25,13 @@ private:
 	std::unique_ptr<unsigned char[]> data;
 public:
 
-    Image(std::string im);	// default constructor - define in .cpp
+    Image(std::string im);	// default constructor
     Image(const Image & copy);
     Image(int w, int h, unsigned char*buffer);
     Image(Image&& move);
-	~Image();	// destructor - define in .cpp file
+	~Image();	// destructor
 
+	//overloading operators:
 	Image& operator=(const Image& rhs)
 	{
 		if (this == &rhs)
@@ -119,6 +120,7 @@ public:
 
     };  
 
+    //used for unit testing
     bool operator==(const Image& comp) 
 		{
 			Image curr(*this);
@@ -142,6 +144,7 @@ public:
 
 			return true; 
 		}
+	//used for adding images together
     Image operator+(const Image & comp)
 	{
 		Image curr(*this);
@@ -167,7 +170,7 @@ public:
 
 		return curr; 
 	}
-
+	//subtracting one image from the other
 	Image operator-(const Image & comp)
 	{
 		Image curr(*this);
@@ -191,9 +194,9 @@ public:
 			++comp_beg;
 		}
 
-		return curr; 
-		
+		return curr; 	
 	}
+	//inverts an image
 	Image operator!()
 	{
 		Image curr(*this);
@@ -210,6 +213,7 @@ public:
 
 		return curr;  
 	}
+	//masks an image with another
 	Image operator/(const Image & comp)
 	{
 		Image curr(*this);
@@ -230,6 +234,7 @@ public:
 
 		return curr; 
 	}
+	//creates masks using a threshold value
 	Image operator*(const int f)
 	{
 		Image curr(*this);
